@@ -1,10 +1,10 @@
-# Iris Prediction App (Express + SageMaker)
+# Iris Prediction App (Express + SageMaker or Azure ML)
 
-This app provides a simple frontend and a Node.js API that calls your AWS SageMaker endpoint.
+This app provides a simple frontend and a Node.js API that can call either an AWS SageMaker endpoint or an Azure ML online endpoint.
 
 ## Architecture
 
-Frontend -> Node API -> SageMaker Endpoint -> Prediction
+Frontend -> Node API -> SageMaker or Azure ML Endpoint -> Prediction
 
 ## 1) Prerequisites
 
@@ -20,6 +20,7 @@ Copy `.env.example` to `.env` and update values:
 
 ```bash
 PORT=3000
+MODEL_PROVIDER=sagemaker
 AWS_REGION=ap-south-1
 SAGEMAKER_ENDPOINT_NAME=your-sagemaker-endpoint-name
 ```
@@ -152,3 +153,46 @@ npm start
 Your website flow becomes:
 
 Frontend -> Node API (`/predict`) -> SageMaker endpoint (`ml/inference.py`) -> predicted class name
+
+## 7) Deploy with Azure AI/ML service
+
+If you want the same app on Azure, use the notebook:
+
+- `ml/azure_iris_endpoint.ipynb`
+
+This notebook trains Iris, creates an Azure ML managed online endpoint, deploys `score.py`, and prints scoring URI + key.
+
+### Backend settings for Azure ML
+
+Set these variables in `.env` or your hosting environment:
+
+```bash
+MODEL_PROVIDER=azureml
+AZURE_ML_SCORING_URI=https://<your-endpoint>.<region>.inference.ml.azure.com/score
+AZURE_ML_API_KEY=<your-azure-ml-endpoint-key>
+AZURE_ML_DEPLOYMENT_NAME=blue
+```
+
+### Deploy your Node website to Azure Web App
+
+1. Create a Linux Web App (Node 18+).
+2. Deploy code (GitHub Actions, zip deploy, or `az webapp up`).
+3. In Web App Configuration, set env vars:
+
+- `PORT=3000`
+- `MODEL_PROVIDER=azureml`
+- `AZURE_ML_SCORING_URI=...`
+- `AZURE_ML_API_KEY=...`
+- `AZURE_ML_DEPLOYMENT_NAME=blue`
+
+4. Restart the Web App.
+
+### Optional Azure CLI quick start
+
+```bash
+az group create -n <rg> -l <region>
+az appservice plan create -g <rg> -n <plan> --is-linux --sku B1
+az webapp create -g <rg> -p <plan> -n <app-name> --runtime "NODE|20-lts"
+az webapp config appsettings set -g <rg> -n <app-name> --settings PORT=3000 MODEL_PROVIDER=azureml AZURE_ML_SCORING_URI=<uri> AZURE_ML_API_KEY=<key> AZURE_ML_DEPLOYMENT_NAME=blue
+az webapp up -g <rg> -n <app-name>
+```
