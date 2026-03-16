@@ -69,7 +69,12 @@ app.post("/predict", async (req, res) => {
       prediction = bodyString;
     }
 
-    return res.json({ prediction });
+    const normalizedPrediction =
+      prediction && typeof prediction === "object" && "prediction" in prediction
+        ? prediction.prediction
+        : prediction;
+
+    return res.json({ prediction: normalizedPrediction });
   } catch (error) {
     console.error("Prediction error:", error);
     return res.status(500).json({
@@ -79,6 +84,6 @@ app.post("/predict", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0" ,  () => {
   console.log(`Server listening on port ${PORT}`);
 });
