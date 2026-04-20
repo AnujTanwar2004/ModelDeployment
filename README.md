@@ -2,6 +2,21 @@
 
 This app provides a simple frontend and a Node.js API that can call either an AWS SageMaker endpoint or an Azure ML online endpoint.
 
+## Project Structure
+
+```
+├── server.js                          # Express API (Beanstalk/EC2/Local)
+├── lambda/                            # AWS Lambda deployment (isolated)
+│   ├── index.mjs                      # Lambda handler function
+│   └── LAMBDA_DEPLOYMENT.md           # Lambda setup guide
+├── ml/                                # ML model training & deployment
+├── public/                            # Frontend files
+├── package.json                       # Dependencies
+├── Dockerfile                         # For ECS/Fargate deployment
+├── deployment.md                      # Deployment guides
+└── README.md                          # This file
+```
+
 ## Architecture
 
 Frontend -> Node API -> SageMaker or Azure ML Endpoint -> Prediction
@@ -77,6 +92,17 @@ Content-Type: application/json
 1. Build container image using the included `Dockerfile`.
 2. Push image to ECR.
 3. Run in ECS Fargate with env vars and task role permissions.
+
+### Option D: AWS Lambda
+
+For Lambda-specific deployment, see [`lambda/LAMBDA_DEPLOYMENT.md`](lambda/LAMBDA_DEPLOYMENT.md).
+
+**Lambda-specific files are in the `lambda/` folder:**
+
+- `lambda/index.mjs` - Lambda handler function
+- `lambda/LAMBDA_DEPLOYMENT.md` - Complete Lambda deployment guide
+
+⚠️ **Important**: Lambda files are isolated and do NOT affect Beanstalk, EC2, or local deployments.
 
 ## 5) Required IAM permission
 
